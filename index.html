@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rhyme Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            color: #333;
+            transition: color 0.3s;
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        body.dark-mode {
+            background: linear-gradient(-45deg, #1a1a2e, #16213e, #0f3460, #533483);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            color: #e0e0e0;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        #darkModeToggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0,0,0,0.3);
+            padding: 10px 15px;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        #darkModeToggle:hover {
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        #wordInput {
+            width: 70%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 5px;
+            background-color: rgba(255,255,255,0.9);
+            color: #333;
+        }
+
+        body.dark-mode #wordInput {
+            background-color: rgba(42,42,42,0.9);
+            color: #e0e0e0;
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        #findButton {
+            background-color: #4CAF50;
+        }
+
+        #findButton:hover {
+            background-color: #45a049;
+        }
+
+        #nearRhymeButton {
+            background-color: #2196F3;
+        }
+
+        #nearRhymeButton:hover {
+            background-color: #0b7dda;
+        }
+
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: rgba(255,255,255,0.9);
+            border-radius: 5px;
+            min-height: 100px;
+            backdrop-filter: blur(10px);
+        }
+
+        body.dark-mode #results {
+            background-color: rgba(42,42,42,0.9);
+        }
+
+        #results p {
+            padding: 5px;
+            margin: 5px 0;
+            background-color: rgba(249,249,249,0.8);
+            border-left: 3px solid #4CAF50;
+            padding-left: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark-mode #results p {
+            background-color: rgba(51,51,51,0.8);
+        }
+
+        #results h3 {
+            color: #333;
+        }
+
+        body.dark-mode #results h3 {
+            color: #e0e0e0;
+        }
+
+        .favorite-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 5px;
+            margin: 0;
+        }
+
+        .favorite-btn:hover {
+            transform: scale(1.2);
+        }
+
+        #favorites {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: rgba(255,255,255,0.9);
+            border-radius: 5px;
+            backdrop-filter: blur(10px);
+        }
+
+        body.dark-mode #favorites {
+            background-color: rgba(42,42,42,0.9);
+        }
+
+        #favorites h2 {
+            color: #333;
+            margin-top: 0;
+        }
+
+        body.dark-mode #favorites h2 {
+            color: #e0e0e0;
+        }
+
+        .favorite-item {
+            padding: 8px;
+            margin: 5px 0;
+            background-color: rgba(249,249,249,0.8);
+            border-left: 3px solid #FFD700;
+            padding-left: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark-mode .favorite-item {
+            background-color: rgba(51,51,51,0.8);
+        }
+
+        .remove-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .remove-btn:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <button id="darkModeToggle">🌙 Dark Mode</button>
+
+    <h1>Rhyme Finder</h1>
+    
+    <input type="text" id="wordInput" placeholder="Type a word and press Enter...">
+    <br>
+    <button id="findButton">Find Rhymes</button>
+    <button id="nearRhymeButton">Near Rhymes</button>
+    
+    <div id="results"></div>
+
+    <div id="favorites">
+        <h2>⭐ Favorites</h2>
+        <div id="favoritesList">No favorites yet. Click the star next to any rhyme to save it!</div>
+    </div>
+
+    <script>
+        const button = document.getElementById('findButton');
+        const nearButton = document.getElementById('nearRhymeButton');
+        const input = document.getElementById('wordInput');
+        const results = document.getElementById('results');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const favoritesList = document.getElementById('favoritesList');
+
+        // Load favorites from localStorage
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+        // Display favorites
+        function displayFavorites() {
+            if (favorites.length === 0) {
+                favoritesList.innerHTML = 'No favorites yet. Click the star next to any rhyme to save it!';
+            } else {
+                favoritesList.innerHTML = favorites.map(word => 
+                    `<div class="favorite-item">
+                        <span>${word}</span>
+                        <button class="remove-btn" onclick="removeFavorite('${word}')">Remove</button>
+                    </div>`
+                ).join('');
+            }
+        }
+
+        // Add to favorites
+        function addFavorite(word) {
+            if (!favorites.includes(word)) {
+                favorites.push(word);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                displayFavorites();
+            }
+        }
+
+        // Remove from favorites
+        window.removeFavorite = function(word) {
+            favorites = favorites.filter(fav => fav !== word);
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            displayFavorites();
+        };
+
+        // Dark mode toggle
+        darkModeToggle.onclick = function() {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                darkModeToggle.textContent = '☀️ Light Mode';
+            } else {
+                darkModeToggle.textContent = '🌙 Dark Mode';
+            }
+        };
+
+        function findRhymes(type) {
+            const word = input.value;
+            
+            if (word === '') {
+                results.innerHTML = 'Please type a word!';
+                return;
+            }
+
+            results.innerHTML = 'Loading...';
+
+            const apiUrl = type === 'near' 
+                ? 'https://api.datamuse.com/words?rel_nry=' + word
+                : 'https://api.datamuse.com/words?rel_rhy=' + word;
+
+            fetch(apiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        results.innerHTML = 'No rhymes found!';
+                    } else {
+                        const rhymeType = type === 'near' ? 'Near rhymes' : 'Rhymes';
+                        let output = '<h3>' + rhymeType + ' for "' + word + '" (' + data.length + ' found):</h3>';
+                        for (let i = 0; i < data.length; i++) {
+                            const isFavorite = favorites.includes(data[i].word);
+                            output += `<p>
+                                <span>${data[i].word}</span>
+                                <button class="favorite-btn" onclick="addFavorite('${data[i].word}')">${isFavorite ? '⭐' : '☆'}</button>
+                            </p>`;
+                        }
+                        results.innerHTML = output;
+                    }
+                });
+        }
+
+        // Make addFavorite available globally
+        window.addFavorite = addFavorite;
+
+        button.onclick = function() {
+            findRhymes('exact');
+        };
+
+        nearButton.onclick = function() {
+            findRhymes('near');
+        };
+
+        input.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                findRhymes('exact');
+            }
+        });
+
+        // Display favorites on load
+        displayFavorites();
+    </script>
+</body>
+</html>
